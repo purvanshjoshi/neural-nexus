@@ -8,3 +8,5 @@ opencv-python-headless
 pillow
 pydantic
 fpdf2
+huggingface_hub
+scipy

@@ -15,9 +15,12 @@ from utils import (
     get_transforms, 
     apply_clahe, 
     overlay_heatmap, 
-    numpy_to_base64
+    numpy_to_base64,
+    calculate_risk_metrics,
+    get_score_cam
 )
 from report import generate_clinical_report
+from llm_engine import generate_clinical_narrative
 
 # ==========================================
 # 1. SETUP & CONFIGURATION
@@ -64,6 +67,9 @@ class AnalysisResult(BaseModel):
     probabilities: Dict[str, float]
     images: Dict[str, str]  # Base64 strings: original, enhanced, heatmap
     tumor_location: Dict[str, float] = None
+    risk_metrics: Dict[str, float] = None
+    narrative: str = None
+    uncertainty: float = 0.0
 
 # ==========================================
 # 3. ENDPOINTS
@@ -105,8 +111,8 @@ async def analyze_mri(file: UploadFile = File(...)):
         transform = get_transforms()
         input_tensor = transform(image).unsqueeze(0).to(DEVICE)
         
-        # 3. Inference & Grad-CAM
-        heatmap, idx, all_probs = cam_engine.generate(input_tensor)
+        # 3. Inference & Grad-CAM (with MC Dropout for uncertainty)
+        heatmap, idx, all_probs, uncertainty = cam_engine.generate(input_tensor, mc_samples=10)
         
         # 4. Image Generation
         enhanced_np = apply_clahe(img_np)
@@ -119,17 +125,22 @@ async def analyze_mri(file: UploadFile = File(...)):
             "y": float(y / heatmap.shape[0])
         } if CLASSES[idx] != "No Tumor" else None
 
-        # 6. Result Packaging
+        # 6. Risk Stratification
+        risk_data = calculate_risk_metrics(heatmap)
+
+        # 7. Result Packaging
         results = {
             "label": CLASSES[idx],
-            "confidence": all_probs[idx],
-            "probabilities": {CLASSES[i]: all_probs[i] for i in range(len(CLASSES))},
+            "confidence": float(all_probs[idx]),
+            "probabilities": {CLASSES[i]: float(all_probs[i]) for i in range(len(CLASSES))},
             "images": {
                 "original": numpy_to_base64(img_np),
                 "enhanced": numpy_to_base64(enhanced_np),
                 "heatmap": numpy_to_base64(heatmap_overlay)
             },
-            "tumor_location": tumor_loc
+            "tumor_location": tumor_loc,
+            "risk_metrics": risk_data,
+            "uncertainty": uncertainty
         }
         
         return results
@@ -150,6 +161,47 @@ async def get_report(data: AnalysisResult):
     except Exception as e:
         print(f"Error generating report: {e}")
         raise HTTPException(status_code=500, detail=f"Report generation failed: {str(e)}")
+
+@app.post("/api/narrative")
+async def get_narrative(data: Dict):
+    """
+    Stand-alone endpoint for generating LLM narratives.
+    Used by the Nexus Oracle chat or the report generator.
+    """
+    try:
+        narrative = generate_clinical_narrative(data)
+        return {"narrative": narrative}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Narrative generation failed: {str(e)}")
+
+@app.post("/api/scorecam")
+async def get_scorecam(file: UploadFile = File(...)):
+    """
+    Experimental Score-CAM visualization.
+    """
+    if not model_engine:
+        raise HTTPException(status_code=503, detail="AI Core offline.")
+    
+    try:
+        contents = await file.read()
+        image = Image.open(io.BytesIO(contents)).convert("RGB")
+        img_np = np.array(image)
+        transform = get_transforms()
+        input_tensor = transform(image).unsqueeze(0).to(DEVICE)
+        
+        # Get target layer for Score-CAM
+        target = model_engine.base_model.layer4
+        
+        # We need the predicted class first
+        with torch.no_grad():
+            class_idx = model_engine(input_tensor).argmax(dim=1).item()
+        
+        score_map = get_score_cam(model_engine, target, input_tensor, class_idx)
+        overlay = overlay_heatmap(img_np, score_map)
+        
+        return {"heatmap": numpy_to_base64(overlay)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Score-CAM failed: {str(e)}")
 
 # ==========================================
 # 4. EXECUTION

@@ -7,7 +7,12 @@ import {
   Download,
   SplitSquareHorizontal,
   Maximize2,
-  Minimize2
+  Minimize2,
+  Mic,
+  MicOff,
+  MessageSquare,
+  AlertTriangle,
+  Zap
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Canvas } from '@react-three/fiber';
@@ -34,6 +39,15 @@ function App() {
   const [isSpatialExpanded, setIsSpatialExpanded] = useState(false);
   const [isDeconstructed, setIsDeconstructed] = useState(false);
   const [selectedHotspot, setSelectedHotspot] = useState(null);
+
+  // Innovation State
+  const [isMicActive, setIsMicActive] = useState(false);
+  const [narrative, setNarrative] = useState("");
+  const [isNarrativeLoading, setIsNarrativeLoading] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [messages, setMessages] = useState([
+    { role: 'assistant', content: 'Neural Nexus online. I have analyzed the scan and generated a clinical narrative. How can I assist?' }
+  ]);
 
   const TargetHUD = ({ location }) => {
     if (!location) return null;
@@ -83,12 +97,15 @@ function App() {
 
       const data = await response.json();
       
-      setTimeout(() => {
+      setTimeout(async () => {
         setResult(data);
         setActiveMode('gradcam');
         setSliderValue(1.0);
         setZoomLevel(1.0);
         setIsAnalyzing(false);
+        
+        // Auto-fetch Narrative after analysis
+        fetchNarrative(data);
       }, 2400); 
     } catch (error) {
       console.error(error);
@@ -97,8 +114,69 @@ function App() {
     }
   };
 
+  const fetchNarrative = async (analysisResult) => {
+    setIsNarrativeLoading(true);
+    try {
+      const resp = await fetch(`${API_BASE}/api/narrative`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(analysisResult)
+      });
+      const data = await resp.json();
+      setNarrative(data.narrative);
+      setResult(prev => ({ ...prev, narrative: data.narrative }));
+      // Add narrative to chat history
+      setMessages(prev => [
+        ...prev, 
+        { role: 'assistant', content: `DIAGNOSTIC NARRATIVE GENERATED:\n\n${data.narrative}` }
+      ]);
+    } catch (e) {
+      console.error("Narrative fetch failed", e);
+    } finally {
+      setIsNarrativeLoading(false);
+    }
+  };
+
+  // Voice Command Implementation
+  const startVoiceCommands = () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      alert("Speech recognition not supported in this browser.");
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = false;
+    recognition.lang = 'en-US';
+
+    recognition.onstart = () => setIsMicActive(true);
+    recognition.onend = () => setIsMicActive(false);
+
+    recognition.onresult = (event) => {
+      const command = event.results[event.results.length - 1][0].transcript.toLowerCase();
+      console.log("Voice Command:", command);
+
+      if (command.includes('nexus') || command.includes('astra')) {
+        if (command.includes('zoom in')) setZoomLevel(prev => Math.min(prev + 0.5, 5.0));
+        if (command.includes('zoom out')) setZoomLevel(prev => Math.max(prev - 0.5, 1.0));
+        if (command.includes('grad-cam')) handleModeChange('gradcam');
+        if (command.includes('split view')) handleModeChange('split');
+        if (command.includes('raw')) handleModeChange('raw');
+        if (command.includes('report')) generateReport();
+        if (command.includes('chat')) setIsChatOpen(true);
+      }
+    };
+
+    recognition.start();
+  };
+
   const generateReport = async () => {
     if (!result) return;
+    if (isNarrativeLoading) {
+      alert("Please wait. Clinical narrative is still being generated...");
+      return;
+    }
     setIsExporting(true);
 
     try {
@@ -144,8 +222,39 @@ function App() {
     setZoomLevel(prev => Math.min(Math.max(1.0, prev + zoomDelta), 5.0));
   };
 
+  const fetchScoreCAM = async () => {
+    if (!file || !result) return;
+    setScanStatus("GENERATING SCORE-CAM (GRADIENT-FREE)...");
+    setIsAnalyzing(true);
+    
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    try {
+      const resp = await fetch(`${API_BASE}/api/scorecam`, {
+        method: 'POST',
+        body: formData
+      });
+      const data = await resp.json();
+      setResult(prev => ({
+        ...prev,
+        images: { ...prev.images, scorecam: data.heatmap }
+      }));
+      setActiveMode('scorecam');
+    } catch (e) {
+      console.error("Score-CAM failed", e);
+      alert("Score-CAM Engine failed. Gradient-free analysis unavailable.");
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
   // When changing modes, if moving TO split, set default slider to 50%.
   const handleModeChange = (mode) => {
+    if (mode === 'scorecam' && !result.images.scorecam) {
+      fetchScoreCAM();
+      return;
+    }
     setActiveMode(mode);
     if (mode === 'split') {
       setSliderValue(0.5); // Center the wipe separator
@@ -241,11 +350,11 @@ function App() {
                </>
             ) : (
                <img 
-                 src={`data:image/png;base64,${result.images.heatmap}`} 
+                 src={`data:image/png;base64,${activeMode === 'scorecam' ? result.images.scorecam : result.images.heatmap}`} 
                  className="mri-layer heatmap-layer" 
                  alt="Heatmap Opacity Layer"
                  draggable="false"
-                 style={{ opacity: activeMode === 'gradcam' ? sliderValue : 0 }}
+                 style={{ opacity: (activeMode === 'gradcam' || activeMode === 'scorecam') ? sliderValue : 0 }}
                />
             )}
             
@@ -301,26 +410,63 @@ function App() {
 
         <AnimatePresence>
           {result && (
-            <motion.div 
-              className="telemetry-minimal"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-            >
-              <div className="metric-row">
-                <span className="metric-label">DIAGNOSIS</span>
-                <span className="metric-value" style={{ color: result.label === 'No Tumor' ? 'var(--success)' : 'var(--danger)' }}>
-                  {result.label !== 'No Tumor' ? result.label.toUpperCase() + ' DETECTED' : 'NO TUMOR'}
-                </span>
-              </div>
-              <div className="metric-row">
-                <span className="metric-label">CONFIDENCE</span>
-                <span className="metric-value accent-cyan">{(result.confidence * 100).toFixed(1)}%</span>
-              </div>
-              <div className="metric-row">
-                <span className="metric-label">ZOOM STATE</span>
-                <span className="metric-value">{zoomLevel.toFixed(1)}x</span>
-              </div>
-            </motion.div>
+            <>
+              <motion.div 
+                className="telemetry-minimal"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+              >
+                <div className="metric-row">
+                  <span className="metric-label">DIAGNOSIS</span>
+                  <span className="metric-value" style={{ color: result.label === 'No Tumor' ? 'var(--success)' : 'var(--danger)' }}>
+                    {result.label !== 'No Tumor' ? result.label.toUpperCase() + ' DETECTED' : 'NO TUMOR'}
+                  </span>
+                </div>
+                <div className="metric-row">
+                  <span className="metric-label">CONFIDENCE</span>
+                  <span className="metric-value accent-cyan">
+                    {(result.confidence * 100).toFixed(1)}% 
+                    <small className="uncertainty-tag"> ±{(result.uncertainty * 100).toFixed(1)}%</small>
+                  </span>
+                </div>
+                <div className="metric-row">
+                  <span className="metric-label">ZOOM STATE</span>
+                  <span className="metric-value">{zoomLevel.toFixed(1)}x</span>
+                </div>
+              </motion.div>
+
+              {/* RISK DASHBOARD [NEW] */}
+              <motion.div 
+                className="risk-dashboard hud-module"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                <div className="module-header">
+                  <AlertTriangle size={14} className="accent-orange" />
+                  <span>NEXUS RISK STRATIFICATION</span>
+                </div>
+                <div className="risk-score-container">
+                  <div className="risk-gauge">
+                    <svg viewBox="0 0 36 36" className="circular-chart orange">
+                      <path className="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                      <path className="circle" strokeDasharray={`${result.risk_metrics?.risk_score}, 100`} d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    </svg>
+                    <div className="percentage">{result.risk_metrics?.risk_score}</div>
+                  </div>
+                  <div className="risk-stats">
+                    <div className="risk-stat-item">
+                      <span>Entropy</span>
+                      <small>{result.risk_metrics?.entropy.toFixed(3)}</small>
+                    </div>
+                    <div className="risk-stat-item">
+                      <span>Area Ratio</span>
+                      <small>{(result.risk_metrics?.area_ratio * 100).toFixed(1)}%</small>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </>
           )}
         </AnimatePresence>
       </div>
@@ -380,10 +526,19 @@ function App() {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
           >
-            <button className="hud-action-btn" onClick={generateReport} disabled={isExporting}>
-               <FileText size={16} /> 
-               {isExporting ? 'GENERATING...' : 'EXPORT REPORT'}
-            </button>
+            <div className="action-stack">
+              <button className="hud-action-btn" onClick={generateReport} disabled={isExporting}>
+                 <FileText size={16} /> 
+                 {isExporting ? 'GENERATING...' : 'EXPORT REPORT'}
+              </button>
+              <button 
+                className={`hud-action-btn ${isMicActive ? 'active-pulse' : ''}`} 
+                onClick={startVoiceCommands}
+              >
+                 {isMicActive ? <Mic size={16} className="accent-red" /> : <MicOff size={16} />}
+                 {isMicActive ? 'LISTENING...' : 'VOICE HUD'}
+              </button>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -421,6 +576,12 @@ function App() {
                 onClick={() => handleModeChange('gradcam')}
               >
                 GRAD-CAM
+              </button>
+              <button 
+                className={activeMode === 'scorecam' ? 'active' : ''} 
+                onClick={() => handleModeChange('scorecam')}
+              >
+                SCORE-CAM
               </button>
               <div className="hud-separator" />
               <button 
@@ -514,6 +675,64 @@ function App() {
               <iframe src={pdfPreviewUrl} className="preview-iframe" title="PDF Preview" />
             </motion.div>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {result && (
+          <>
+            {/* NEXUS ORACLE CHAT TRIGGER */}
+            <motion.button
+              className="oracle-trigger"
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              whileHover={{ scale: 1.1 }}
+              onClick={() => setIsChatOpen(true)}
+            >
+              <MessageSquare size={24} />
+              {isNarrativeLoading && <div className="loading-dot" />}
+            </motion.button>
+
+            {/* NEXUS ORACLE MODAL */}
+            {isChatOpen && (
+              <motion.div 
+                className="oracle-container"
+                initial={{ opacity: 0, y: 20, scale: 0.9 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 20, scale: 0.9 }}
+              >
+                <div className="oracle-header">
+                  <div className="flex items-center gap-2">
+                    <Zap size={16} className="accent-cyan" />
+                    <span>NEXUS ORACLE</span>
+                  </div>
+                  <button onClick={() => setIsChatOpen(false)}>×</button>
+                </div>
+                <div className="oracle-body">
+                  <div className="narrative-box">
+                    <h3>Clinical Narrative (BioMistral v1.0)</h3>
+                    {isNarrativeLoading ? (
+                      <div className="shimmer-text">Generating radiologist impression...</div>
+                    ) : (
+                      <div className="narrative-content">
+                        {narrative || "No narrative generated."}
+                      </div>
+                    )}
+                  </div>
+                  <div className="chat-messages">
+                    {messages.map((msg, i) => (
+                      <div key={i} className={`message ${msg.role}`}>
+                        {msg.content}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="oracle-footer">
+                   <p className="clinical-caveat">Powered by BioMistral-7B. Research Purposes Only.</p>
+                </div>
+              </motion.div>
+            )}
+          </>
         )}
       </AnimatePresence>
 

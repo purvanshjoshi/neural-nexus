@@ -81,8 +81,38 @@ def generate_clinical_report(data):
     pdf.set_y(img_y + 95) # Move below images
     pdf.ln(10)
     
-    # 3. Probability Breakdown
+    # 3. Risk Stratification Section
+    if 'risk_metrics' in data and data['risk_metrics']:
+        metrics = data['risk_metrics']
+        pdf.ln(10)
+        pdf.set_font('helvetica', 'B', 12)
+        pdf.set_text_color(255, 100, 0) # Risk Orange
+        pdf.cell(0, 10, f"NEXUS RISK ASSESSMENT | SCORE: {metrics.get('risk_score', 'N/A')}/100", ln=True)
+        
+        pdf.set_font('helvetica', '', 10)
+        pdf.set_text_color(0, 0, 0)
+        pdf.cell(0, 7, f"- Heatmap Entropy (Chaos): {metrics.get('entropy', 0):.4f}", ln=True)
+        pdf.cell(0, 7, f"- Activation Area Ratio: {metrics.get('area_ratio', 0):.2%}", ln=True)
+        pdf.cell(0, 7, f"- Hemispheric Asymmetry: {metrics.get('asymmetry', 0):.2%}", ln=True)
+
+    # 4. Clinical Narrative Section (BioMistral)
+    if 'narrative' in data and data['narrative']:
+        pdf.add_page() # Put narrative on a fresh page if it's long
+        pdf.set_font('helvetica', 'B', 14)
+        pdf.set_text_color(0, 102, 255)
+        pdf.cell(0, 10, "RADIOLOGICAL IMPRESSION (AI-GENERATED)", ln=True)
+        pdf.ln(5)
+        
+        pdf.set_font('helvetica', '', 11)
+        pdf.set_text_color(40, 40, 40)
+        # Multi-cell for long text
+        pdf.multi_cell(0, 6, data['narrative'])
+        pdf.ln(10)
+
+    # 5. Probability Breakdown
+    pdf.set_y(pdf.get_y() + 5)
     pdf.set_font('helvetica', 'B', 12)
+    pdf.set_text_color(0, 0, 0)
     pdf.cell(0, 10, 'Probability Distribution Breakdown', ln=True)
     pdf.ln(2)
     
@@ -99,14 +129,18 @@ def generate_clinical_report(data):
         pdf.rect(75, pdf.get_y() + 2, 100 * prob, 4, 'F')
         pdf.ln(8)
     
-    # 4. Final Disclaimer
+    # 6. Final Disclaimer
     pdf.ln(10)
     pdf.set_fill_color(245, 245, 245)
-    pdf.rect(10, pdf.get_y(), 190, 20, 'F')
+    # Check if we have enough room on page
+    if pdf.get_y() > 250:
+        pdf.add_page()
+    
+    pdf.rect(10, pdf.get_y(), 190, 25, 'F')
     pdf.set_font('helvetica', 'B', 8)
-    pdf.cell(0, 10, "   CLINICAL DISCLAIMER:", ln=True)
+    pdf.cell(0, 8, "   CLINICAL DISCLAIMER:", ln=True)
     pdf.set_font('helvetica', '', 8)
-    pdf.multi_cell(0, 4, "   Neural Nexus is an AI-assisted diagnostic tool. This report is intended for use by qualified medical professionals only. \n   Final diagnosis must be confirmed through professional clinical correlation.")
+    pdf.multi_cell(0, 4, "   Neural Nexus is an AI-assisted diagnostic tool. This report is intended for use by qualified medical professionals only. \n   BioMistral narratives are research-only and must be clinically correlated. Final diagnosis must be confirmed through professional clinical correlation.")
 
     # Return as bytes
     return pdf.output()
