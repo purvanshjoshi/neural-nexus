@@ -45,6 +45,19 @@ def generate_clinical_report(data):
     pdf.cell(0, 10, f"System Confidence: {data['confidence']:.2%}", ln=True)
     pdf.ln(5)
     
+    # 1.5 Clinical Narrative
+    if data.get('clinical_narrative'):
+        pdf.set_font('helvetica', 'B', 12)
+        pdf.cell(0, 8, "AI-Assisted Clinical Narrative", ln=True)
+        pdf.set_font('helvetica', '', 10)
+        pdf.set_text_color(50, 50, 50)
+        # Use latin-1 compatible characters or let fpdf2 handle Unicode
+        narrative = data['clinical_narrative']
+        pdf.multi_cell(0, 5, narrative)
+        pdf.ln(5)
+        pdf.set_text_color(0, 0, 0)
+
+    
     # 2. Visualizations
     pdf.set_font('helvetica', 'B', 12)
     pdf.cell(95, 10, 'Original MRI Frame', align='C')

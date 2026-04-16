@@ -689,12 +689,100 @@ input[type=range].styled-slider:focus {
   white-space: nowrap;
 }
 
-@keyframes pinpoint-pulse {
-  0% { transform: scale(1); opacity: 0.8; }
-  50% { transform: scale(1.1); opacity: 1; border-width: 3px; }
-  100% { transform: scale(1); opacity: 0.8; }
+/* CLINICAL SIDECAR (UPSTREAM RECONCILIATION) */
+.clinical-sidecar {
+  background: var(--glass-bg);
+  backdrop-filter: blur(32px);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  width: 320px;
+  transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+  overflow: hidden;
+  margin-bottom: 1rem;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
 
+.sidecar-header {
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  background: rgba(255,255,255,0.03);
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.sidecar-body {
+  padding: 1.25rem;
+}
+
+.risk-metric-block {
+  margin-bottom: 1.5rem;
+}
+
+.risk-metric-block small {
+  font-size: 0.6rem;
+  color: var(--text-secondary);
+  letter-spacing: 0.1em;
+}
+
+.risk-value-large {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: var(--accent-cyan);
+  line-height: 1;
+}
+
+.risk-value-large span {
+  font-size: 1rem;
+  color: var(--text-secondary);
+}
+
+.clinical-text {
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  color: var(--text-primary);
+  opacity: 0.9;
+}
+
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--accent-cyan);
+  border-radius: 50%;
+  margin-left: auto;
+  box-shadow: 0 0 10px var(--accent-cyan);
+  animation: pulse-dot 1.5s infinite;
+}
+
+@keyframes pulse-dot {
+  0% { transform: scale(0.9); opacity: 0.5; }
+  50% { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(0.9); opacity: 0.5; }
+}
+
+.uncertainty-tag {
+  font-size: 0.65rem;
+  color: var(--text-secondary);
+  margin-left: 0.5rem;
+  font-weight: 500;
+  opacity: 0.7;
+}
+
+.risk-dashboard-mini {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--glass-border);
+}
+
+/* ==========================================
+   INNOVATION HUD: RISK & ORACLE
+   ========================================== */
+
+<<<<<<< HEAD
 .uncertainty-tag {
   font-size: 0.65rem;
   color: var(--text-secondary);
@@ -944,5 +1032,63 @@ input[type=range].styled-slider:focus {
   color: var(--text-secondary);
   text-align: center;
   opacity: 0.6;
+=======
+/* NEXUS ORACLE SIDECAR (AI Innovation) */
+.bottom-right {
+  bottom: 2rem;
+  right: 2rem;
+}
+
+.nexus-oracle-sidecar {
+  background: var(--glass-bg);
+  backdrop-filter: blur(32px);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  width: 320px;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+}
+
+.nexus-oracle-sidecar.collapsed {
+  width: 180px;
+  cursor: pointer;
+}
+
+.nexus-oracle-sidecar.collapsed:hover {
+  border-color: var(--accent-cyan);
+  background: rgba(0, 242, 255, 0.05);
+}
+
+.oracle-header {
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  border-bottom: 1px solid var(--glass-border);
+  background: rgba(0,0,0,0.2);
+}
+
+.oracle-body {
+  display: flex;
+  flex-direction: column;
+  height: 400px;
+}
+
+
+
+.unread-dot {
+  width: 6px;
+  height: 6px;
+  background: var(--accent-cyan);
+  border-radius: 50%;
+  margin-left: auto;
+  box-shadow: 0 0 8px var(--accent-cyan);
+>>>>>>> upstream/main
 }
 

@@ -12,7 +12,8 @@ import {
   MicOff,
   MessageSquare,
   AlertTriangle,
-  Zap
+  Zap,
+  Info
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Canvas } from '@react-three/fiber';
@@ -31,23 +32,59 @@ function App() {
   const [isExporting, setIsExporting] = useState(false);
   const [pdfPreviewUrl, setPdfPreviewUrl] = useState(null);
   
-  // Interactive Mechanics State
+  // HUD State
   const [activeMode, setActiveMode] = useState('gradcam');
-  const [sliderValue, setSliderValue] = useState(1.0); // Acts as opacity OR wipe percentage
-  const [zoomLevel, setZoomLevel] = useState(1.0);     // Advanced Interaction: Zoom target
-  const constraintsRef = useRef(null);                 // Advanced Interaction: Drag bounds
+  const [sliderValue, setSliderValue] = useState(1.0);
+  const [zoomLevel, setZoomLevel] = useState(1.0);
+  const constraintsRef = useRef(null);
   const [isSpatialExpanded, setIsSpatialExpanded] = useState(false);
   const [isDeconstructed, setIsDeconstructed] = useState(false);
   const [selectedHotspot, setSelectedHotspot] = useState(null);
-
-  // Innovation State
+  
+  // Innovation Modules State
+  const [isInsightOpen, setIsInsightOpen] = useState(false);
   const [isMicActive, setIsMicActive] = useState(false);
-  const [narrative, setNarrative] = useState("");
-  const [isNarrativeLoading, setIsNarrativeLoading] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
-  const [messages, setMessages] = useState([
-    { role: 'assistant', content: 'Neural Nexus online. I have analyzed the scan and generated a clinical narrative. How can I assist?' }
-  ]);
+  const [messages, setMessages] = useState([]);
+
+  // --- Sub-Components ---
+
+  const RiskExplainerSidecar = () => {
+    if (!result || !result.clinical_narrative || !result.risk_metrics) return null;
+    return (
+      <motion.div 
+        className={`clinical-sidecar ${isInsightOpen ? 'expanded' : 'collapsed'}`}
+        layout
+      >
+        <div className="sidecar-header" onClick={() => setIsInsightOpen(!isInsightOpen)}>
+          <Info size={18} className="accent-cyan" />
+          <span>CLINICAL RISK INSIGHT</span>
+          {!isInsightOpen && <div className="pulse-dot" />}
+        </div>
+        
+        <AnimatePresence>
+          {isInsightOpen && (
+            <motion.div 
+              className="sidecar-body"
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+            >
+              <div className="risk-metric-block">
+                 <small>NEXUS RISK INDEX</small>
+                 <div className="risk-value-large">
+                    {result.risk_metrics.risk_score}<span>/100</span>
+                 </div>
+              </div>
+              <div className="clinical-text">
+                {result.clinical_narrative}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
+    );
+  };
 
   const TargetHUD = ({ location }) => {
     if (!location) return null;
@@ -67,12 +104,14 @@ function App() {
     );
   };
 
+  // --- Core Handlers ---
+
   const handleFileUpload = (e) => {
     const uploadedFile = e.target.files[0];
     if (uploadedFile) {
       setFile(uploadedFile);
       setResult(null);
-      setZoomLevel(1.0); // reset zoom on new upload
+      setZoomLevel(1.0);
     }
   };
 
@@ -80,655 +119,237 @@ function App() {
     if (!file) return;
 
     setIsAnalyzing(true);
-    setScanStatus("INITIALIZING NEURAL CORE...");
+    setScanStatus("INITIALIZING AI CORE...");
     const formData = new FormData();
     formData.append('file', file);
 
     try {
-      setTimeout(() => setScanStatus("EXTRACTING FEATURES VIA RESNET-50..."), 800);
-      setTimeout(() => setScanStatus("GENERATING GRAD-CAM HEATMAP..."), 1600);
-
       const response = await fetch(`${API_BASE}/api/analyze`, {
         method: 'POST',
         body: formData,
       });
 
-      if (!response.ok) throw new Error("Analysis engine failed");
-
+      if (!response.ok) throw new Error("Inference engine failure");
       const data = await response.json();
       
-      setTimeout(async () => {
-        setResult(data);
-        setActiveMode('gradcam');
-        setSliderValue(1.0);
-        setZoomLevel(1.0);
-        setIsAnalyzing(false);
-        
-        // Auto-fetch Narrative after analysis
-        fetchNarrative(data);
-      }, 2400); 
+      setResult(data);
+      setMessages([{ role: 'assistant', content: `Analysis complete. Primary finding: ${data.label}. I've generated a clinical risk profile. How can I assist?` }]);
+      setActiveMode('gradcam');
+      setSliderValue(1.0);
+      setIsAnalyzing(false);
+      setIsInsightOpen(true); // Auto-open the sidecar on completion
     } catch (error) {
       console.error(error);
-      alert("AI Core Analysis Failed. Please check backend status.");
+      alert("AI Analysis Pipeline Failed.");
       setIsAnalyzing(false);
     }
   };
 
-  const fetchNarrative = async (analysisResult) => {
-    setIsNarrativeLoading(true);
-    try {
-      const resp = await fetch(`${API_BASE}/api/narrative`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(analysisResult)
-      });
-      const data = await resp.json();
-      setNarrative(data.narrative);
-      setResult(prev => ({ ...prev, narrative: data.narrative }));
-      // Add narrative to chat history
-      setMessages(prev => [
-        ...prev, 
-        { role: 'assistant', content: `DIAGNOSTIC NARRATIVE GENERATED:\n\n${data.narrative}` }
-      ]);
-    } catch (e) {
-      console.error("Narrative fetch failed", e);
-    } finally {
-      setIsNarrativeLoading(false);
-    }
-  };
-
-  // Voice Command Implementation
-  const startVoiceCommands = () => {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      alert("Speech recognition not supported in this browser.");
-      return;
-    }
-
-    const recognition = new SpeechRecognition();
-    recognition.continuous = true;
-    recognition.interimResults = false;
-    recognition.lang = 'en-US';
-
-    recognition.onstart = () => setIsMicActive(true);
-    recognition.onend = () => setIsMicActive(false);
-
-    recognition.onresult = (event) => {
-      const command = event.results[event.results.length - 1][0].transcript.toLowerCase();
-      console.log("Voice Command:", command);
-
-      if (command.includes('nexus') || command.includes('astra')) {
-        if (command.includes('zoom in')) setZoomLevel(prev => Math.min(prev + 0.5, 5.0));
-        if (command.includes('zoom out')) setZoomLevel(prev => Math.max(prev - 0.5, 1.0));
-        if (command.includes('grad-cam')) handleModeChange('gradcam');
-        if (command.includes('split view')) handleModeChange('split');
-        if (command.includes('raw')) handleModeChange('raw');
-        if (command.includes('report')) generateReport();
-        if (command.includes('chat')) setIsChatOpen(true);
-      }
-    };
-
-    recognition.start();
-  };
-
   const generateReport = async () => {
     if (!result) return;
-    if (isNarrativeLoading) {
-      alert("Please wait. Clinical narrative is still being generated...");
-      return;
-    }
     setIsExporting(true);
-
     try {
       const response = await fetch(`${API_BASE}/api/report`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(result),
       });
-
-      if (!response.ok) throw new Error("PDF generation failed");
-
       const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      setPdfPreviewUrl(url);
+      setPdfPreviewUrl(window.URL.createObjectURL(blob));
     } catch (error) {
-      console.error(error);
-      alert("PDF Generation failed. Check backend logs.");
+      alert("PDF Export Failed.");
     } finally {
       setIsExporting(false);
     }
   };
 
-  const downloadPDF = () => {
-    if (!pdfPreviewUrl) return;
-    const a = document.createElement('a');
-    a.href = pdfPreviewUrl;
-    a.download = `Neural_Nexus_Report.pdf`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-  };
-
-  const closePreview = () => {
-    setPdfPreviewUrl(null);
-  };
-
-  // Wheel zoom handler
-  const handleWheel = (e) => {
-    if (!result) return;
-    // Map scroll wheel to zoom (0.001 dampening for smooth scrolling)
-    const zoomDelta = e.deltaY * -0.001;
-    // Clamp zoom strictly between 1x and 5x
-    setZoomLevel(prev => Math.min(Math.max(1.0, prev + zoomDelta), 5.0));
-  };
-
   const fetchScoreCAM = async () => {
     if (!file || !result) return;
-    setScanStatus("GENERATING SCORE-CAM (GRADIENT-FREE)...");
+    setScanStatus("GENERATING SCORE-CAM...");
     setIsAnalyzing(true);
-    
     const formData = new FormData();
     formData.append('file', file);
-    
     try {
-      const resp = await fetch(`${API_BASE}/api/scorecam`, {
-        method: 'POST',
-        body: formData
-      });
+      const resp = await fetch(`${API_BASE}/api/scorecam`, { method: 'POST', body: formData });
       const data = await resp.json();
-      setResult(prev => ({
-        ...prev,
-        images: { ...prev.images, scorecam: data.heatmap }
-      }));
+      setResult(prev => ({ ...prev, images: { ...prev.images, scorecam: data.heatmap } }));
       setActiveMode('scorecam');
     } catch (e) {
-      console.error("Score-CAM failed", e);
-      alert("Score-CAM Engine failed. Gradient-free analysis unavailable.");
+      alert("Score-CAM Engine Offline.");
     } finally {
       setIsAnalyzing(false);
     }
   };
 
-  // When changing modes, if moving TO split, set default slider to 50%.
   const handleModeChange = (mode) => {
-    if (mode === 'scorecam' && !result.images.scorecam) {
+    if (mode === 'scorecam' && !result?.images?.scorecam) {
       fetchScoreCAM();
       return;
     }
     setActiveMode(mode);
-    if (mode === 'split') {
-      setSliderValue(0.5); // Center the wipe separator
-    } else if (mode === 'gradcam') {
-      setSliderValue(1.0); // Full opacity
-    }
+    setSliderValue(mode === 'split' ? 0.5 : 1.0);
   };
+
+  const startVoiceCommands = () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) return alert("Browser does not support Speech API");
+    const recognition = new SpeechRecognition();
+    recognition.onstart = () => setIsMicActive(true);
+    recognition.onend = () => setIsMicActive(false);
+    recognition.onresult = (e) => {
+      const cmd = e.results[e.results.length - 1][0].transcript.toLowerCase();
+      if (cmd.includes('nexus') || cmd.includes('astra')) {
+        if (cmd.includes('zoom in')) setZoomLevel(p => Math.min(p + 0.5, 5));
+        if (cmd.includes('zoom out')) setZoomLevel(p => Math.max(p - 0.5, 1));
+        if (cmd.includes('grad-cam')) handleModeChange('gradcam');
+        if (cmd.includes('report')) generateReport();
+      }
+    };
+    recognition.start();
+  };
+
+  // --- Render Helpers ---
+
   const spatialMapVariants = {
-    docked: {
-      bottom: "2rem",
-      left: "2rem",
-      top: "auto",
-      right: "auto",
-      width: "280px",
-      height: "280px",
-      x: "0%",
-      y: "0%",
-      zIndex: 50,
-      opacity: 1,
-      scale: 1,
-    },
-    global: {
-      top: "50%",
-      left: "50%",
-      bottom: "auto",
-      right: "auto",
-      width: "100vw",
-      height: "100vh",
-      x: "-50%",
-      y: "-50%",
-      zIndex: 100,
-      opacity: 1,
-      scale: 1,
-    },
-    expanded: {
-      top: "50%",
-      left: "50%",
-      bottom: "auto",
-      right: "auto",
-      width: "80vw",
-      height: "80vh",
-      x: "-50%",
-      y: "-50%",
-      zIndex: 100,
-      opacity: 1,
-      scale: 1,
-    }
+    docked: { bottom: "2rem", left: "2rem", width: "280px", height: "280px", scale: 1, zIndex: 10 },
+    expanded: { top: "50%", left: "50%", width: "80vw", height: "80vh", x: "-50%", y: "-50%", zIndex: 100 }
   };
 
   return (
     <div className="viewport-root">
       
-      {/* BACKGROUND / MAIN CONTENT MANAGER */}
+      {/* 1. CINEMATIC MRI VIEWPORT */}
       {result ? (
-        <div 
-          className="mri-cinematic-display mri-interactive-viewport fullscreen"
-          ref={constraintsRef}
-          onWheel={handleWheel}
-        >
-          <motion.div
-            className="mri-layer-group"
-            drag={zoomLevel > 1.0} // Only allow dragging if zoomed in
-            dragConstraints={constraintsRef}
-            animate={{ scale: zoomLevel }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            style={{ width: '100%', height: '100%', position: 'absolute' }}
-          >
-            {/* Base Layer */}
-            <img 
-              src={`data:image/png;base64,${result.images[activeMode === 'enhanced' ? 'enhanced' : 'original']}`} 
-              className="mri-layer base-layer" 
-              alt="Base Scan" 
-              draggable="false"
-            />
-            
-            {/* AI Layer Logic */}
+        <div className="mri-cinematic-display fullscreen" onWheel={(e) => setZoomLevel(p => Math.min(Math.max(1, p + e.deltaY * -0.001), 5))}>
+          <motion.div animate={{ scale: zoomLevel }} style={{ width: '100%', height: '100%', position: 'absolute' }}>
+            <img src={`data:image/png;base64,${result.images[activeMode === 'enhanced' ? 'enhanced' : 'original']}`} className="mri-layer" alt="Scan" />
             {activeMode === 'split' ? (
                <>
-                  <img 
-                    src={`data:image/png;base64,${result.images.heatmap}`} 
-                    className="mri-layer heatmap-layer" 
-                    alt="Heatmap Split Layer"
-                    draggable="false"
-                    style={{ 
-                       clipPath: `inset(0 0 0 ${sliderValue * 100}%)`,
-                       opacity: 1 
-                    }}
-                  />
-                  <div 
-                    className="split-wipe-handle" 
-                    style={{ left: `${sliderValue * 100}%` }}
-                  />
+                  <img src={`data:image/png;base64,${result.images.heatmap}`} className="mri-layer" style={{ clipPath: `inset(0 0 0 ${sliderValue * 100}%)` }} alt="Split" />
+                  <div className="split-wipe-handle" style={{ left: `${sliderValue * 100}%` }} />
                </>
             ) : (
                <img 
                  src={`data:image/png;base64,${activeMode === 'scorecam' ? result.images.scorecam : result.images.heatmap}`} 
                  className="mri-layer heatmap-layer" 
-                 alt="Heatmap Opacity Layer"
-                 draggable="false"
-                 style={{ opacity: (activeMode === 'gradcam' || activeMode === 'scorecam') ? sliderValue : 0 }}
+                 style={{ opacity: (activeMode === 'gradcam' || activeMode === 'scorecam') ? sliderValue : 0 }} 
+                 alt="Heatmap" 
                />
             )}
-            
-            {/* 2D TARGET HUD */}
             <TargetHUD location={selectedHotspot} />
           </motion.div>
         </div>
       ) : (
-        /* ZERO-STATE DROPZONE */
         <div className="zero-state-dropzone">
-          <input 
-            type="file" 
-            id="mri-upload" 
-            accept="image/*" 
-            onChange={handleFileUpload}
-            hidden 
-          />
+          <input type="file" id="mri-upload" onChange={handleFileUpload} hidden />
           <label htmlFor="mri-upload" className="dropzone-area">
             {file ? (
               <div className="dropzone-content">
                 <FileText size={48} className="accent-cyan" />
-                <h2 className="dropzone-title">{file.name}</h2>
-                <p className="dropzone-subtitle">Ready for analysis</p>
-                <button 
-                  className="workflow-btn glow float-btn"
-                  onClick={(e) => { e.preventDefault(); analyzeMRI(); }}
-                  disabled={isAnalyzing}
-                >
-                  {isAnalyzing ? <Activity size={18} className="spin" /> : <Brain size={18} />}
-                  {isAnalyzing ? 'PROCESSING...' : 'INITIATE INFERENCE'}
+                <h2>{file.name}</h2>
+                <button className="workflow-btn glow float-btn" onClick={(e) => { e.preventDefault(); analyzeMRI(); }}>
+                  {isAnalyzing ? <Activity size={18} className="spin" /> : <Brain size={18} />} INITIATE INFERENCE
                 </button>
               </div>
             ) : (
               <div className="dropzone-content">
                 <Brain size={64} className="accent-cyan" style={{ opacity: 0.8 }} />
-                <h2 className="dropzone-title">AWAITING INPUT</h2>
-                <p className="dropzone-subtitle mt-2">Click or drag DICOM, JPG, PNG here</p>
+                <h2>AWAITING INPUT</h2>
+                <p>Click or drag MRI scan here</p>
               </div>
             )}
           </label>
         </div>
       )}
 
-      {/* FLOATING TOP LEFT - BRAND & TELEMETRY */}
+      {/* 2. HUD MODULES (Left Telemetry) */}
       <div className="hud-module top-left">
         <div className="brand-header minimal">
           <Brain size={24} className="accent-cyan" />
-          <div className="brand-text">
-            <h1>NEURAL NEXUS</h1>
-            <p>Clinical Diagnostics HUD</p>
-          </div>
+          <div className="brand-text"><h1>NEURAL NEXUS</h1><p>v1.1 Diagnostic HUD</p></div>
         </div>
-
         <AnimatePresence>
           {result && (
-            <>
-              <motion.div 
-                className="telemetry-minimal"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-              >
-                <div className="metric-row">
-                  <span className="metric-label">DIAGNOSIS</span>
-                  <span className="metric-value" style={{ color: result.label === 'No Tumor' ? 'var(--success)' : 'var(--danger)' }}>
-                    {result.label !== 'No Tumor' ? result.label.toUpperCase() + ' DETECTED' : 'NO TUMOR'}
-                  </span>
+            <motion.div className="telemetry-minimal" initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }}>
+              <div className="metric-row"><span className="metric-label">DIAGNOSIS</span><span className="metric-value">{result.label.toUpperCase()}</span></div>
+              <div className="metric-row">
+                <span className="metric-label">CONFIDENCE</span>
+                <span className="metric-value accent-cyan">{(result.confidence * 100).toFixed(1)}% <small>±{(result.uncertainty * 100).toFixed(1)}%</small></span>
+              </div>
+              
+              {/* Composite Dashboard [NEW] */}
+              <div className="risk-dashboard-mini">
+                <div className="risk-stats">
+                   <div className="risk-stat-item"><span>Entropy</span><small>{result.risk_metrics.entropy}</small></div>
+                   <div className="risk-stat-item"><span>Asymmetry</span><small>{result.risk_metrics.asymmetry}</small></div>
                 </div>
-                <div className="metric-row">
-                  <span className="metric-label">CONFIDENCE</span>
-                  <span className="metric-value accent-cyan">
-                    {(result.confidence * 100).toFixed(1)}% 
-                    <small className="uncertainty-tag"> ±{(result.uncertainty * 100).toFixed(1)}%</small>
-                  </span>
-                </div>
-                <div className="metric-row">
-                  <span className="metric-label">ZOOM STATE</span>
-                  <span className="metric-value">{zoomLevel.toFixed(1)}x</span>
-                </div>
-              </motion.div>
-
-              {/* RISK DASHBOARD [NEW] */}
-              <motion.div 
-                className="risk-dashboard hud-module"
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.2 }}
-              >
-                <div className="module-header">
-                  <AlertTriangle size={14} className="accent-orange" />
-                  <span>NEXUS RISK STRATIFICATION</span>
-                </div>
-                <div className="risk-score-container">
-                  <div className="risk-gauge">
-                    <svg viewBox="0 0 36 36" className="circular-chart orange">
-                      <path className="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                      <path className="circle" strokeDasharray={`${result.risk_metrics?.risk_score}, 100`} d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                    </svg>
-                    <div className="percentage">{result.risk_metrics?.risk_score}</div>
-                  </div>
-                  <div className="risk-stats">
-                    <div className="risk-stat-item">
-                      <span>Entropy</span>
-                      <small>{result.risk_metrics?.entropy.toFixed(3)}</small>
-                    </div>
-                    <div className="risk-stat-item">
-                      <span>Area Ratio</span>
-                      <small>{(result.risk_metrics?.area_ratio * 100).toFixed(1)}%</small>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            </>
+              </div>
+            </motion.div>
           )}
         </AnimatePresence>
       </div>
 
-      {/* 3D SPATIAL COPILOT (CINEMATIC PHYSICS WRAPPER) */}
+      {/* 3. COPILOT 3D (Bottom Left) */}
       <AnimatePresence>
         {(isAnalyzing || result) && (
-          <motion.div 
-            layout
-            className="spatial-canvas-wrapper"
-            variants={spatialMapVariants}
-            initial="docked"
-            animate={isAnalyzing ? "global" : (isSpatialExpanded ? "expanded" : "docked")}
-            exit={{ opacity: 0, scale: 0.8 }}
-            transition={{ type: "spring", stiffness: 200, damping: 25 }}
-          >
-            {!isAnalyzing && (
-              <div className="copilot-header">
-                 <Brain size={12} className="accent-cyan" /> 
-                 <span>SPATIAL MAP</span>
-                 <button 
-                   className="expand-btn"
-                   onClick={(e) => {
-                     e.stopPropagation();
-                     setIsSpatialExpanded(!isSpatialExpanded);
-                   }}
-                   title={isSpatialExpanded ? "Minimize" : "Expand"}
-                 >
-                   {isSpatialExpanded ? <Minimize2 size={12} /> : <Maximize2 size={12} />}
-                 </button>
-              </div>
-            )}
-            <div className="canvas-container-placeholder" ref={constraintsRef}>
-              <Canvas camera={{ position: [0, 0, 5], fov: 45 }}>
+          <motion.div className="spatial-canvas-wrapper" variants={spatialMapVariants} animate={isSpatialExpanded ? "expanded" : "docked"}>
+            <div className="copilot-header">
+               <Brain size={12} className="accent-cyan" /> <span>3D SPATIAL MAP</span>
+               <button onClick={() => setIsSpatialExpanded(!isSpatialExpanded)}>{isSpatialExpanded ? <Minimize2 size={12}/> : <Maximize2 size={12}/>}</button>
+            </div>
+            <div className="canvas-container-placeholder">
+              <Canvas camera={{ position: [0, 0, 5] }}>
                 <Suspense fallback={null}>
-                  <BrainModel 
-                    diagnosis={result?.label} 
-                    tumorLocation={result?.tumor_location}
-                    onHotspotClick={(loc) => setSelectedHotspot(loc)}
-                    phase={!isAnalyzing ? 'docked' : (scanStatus.includes('INITIALIZING') ? 'dispersed' : 'forming')}
-                    isDeconstructed={isDeconstructed}
-                    isSpatialExpanded={isSpatialExpanded}
-                  />
+                  <BrainModel diagnosis={result?.label} tumorLocation={result?.tumor_location} onHotspotClick={setSelectedHotspot} scale={isSpatialExpanded ? 2.5 : 1} />
                 </Suspense>
-                <Preload all />
               </Canvas>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* FLOATING TOP RIGHT - EXPORT */}
-      <AnimatePresence>
-        {result && (
-          <motion.div 
-            className="hud-module top-right"
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            <div className="action-stack">
-              <button className="hud-action-btn" onClick={generateReport} disabled={isExporting}>
-                 <FileText size={16} /> 
-                 {isExporting ? 'GENERATING...' : 'EXPORT REPORT'}
-              </button>
-              <button 
-                className={`hud-action-btn ${isMicActive ? 'active-pulse' : ''}`} 
-                onClick={startVoiceCommands}
-              >
-                 {isMicActive ? <Mic size={16} className="accent-red" /> : <MicOff size={16} />}
-                 {isMicActive ? 'LISTENING...' : 'VOICE HUD'}
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* FLOATING BOTTOM CENTER - MODES & ADJUSTER */}
-      <AnimatePresence>
-        {result && (
-          <motion.div 
-            className="hud-module bottom-center cinematic-hud"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-          >
-            <div className="hud-pill-menu" style={{ maxWidth: '440px' }}>
-              <button 
-                className={activeMode === 'raw' ? 'active' : ''} 
-                onClick={() => handleModeChange('raw')}
-              >
-                RAW
-              </button>
-              <button 
-                className={activeMode === 'enhanced' ? 'active' : ''} 
-                onClick={() => handleModeChange('enhanced')}
-              >
-                ENHANCED
-              </button>
-              <button 
-                className={activeMode === 'split' ? 'active' : ''} 
-                onClick={() => handleModeChange('split')}
-              >
-                SPLIT-VIEW
-              </button>
-              <button 
-                className={activeMode === 'gradcam' ? 'active' : ''} 
-                onClick={() => handleModeChange('gradcam')}
-              >
-                GRAD-CAM
-              </button>
-              <button 
-                className={activeMode === 'scorecam' ? 'active' : ''} 
-                onClick={() => handleModeChange('scorecam')}
-              >
-                SCORE-CAM
-              </button>
-              <div className="hud-separator" />
-              <button 
-                className={`deconstruct-toggle ${isDeconstructed ? 'active accent-red' : ''}`}
-                onClick={() => setIsDeconstructed(!isDeconstructed)}
-                title="Deconstruct View"
-              >
-                {isDeconstructed ? 'RECONSTRUCT' : 'DECONSTRUCT'}
-              </button>
-            </div>
-
-            <AnimatePresence>
-              {(activeMode === 'gradcam' || activeMode === 'split') && (
-                <motion.div 
-                  className="hud-adjuster"
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  style={{ overflow: 'hidden' }}
-                >
-                  <div style={{ padding: '0.5rem 0' }}>
-                    <div className="adjuster-header">
-                      <span className="adjuster-label">
-                        {activeMode === 'split' ? 'WIPE BOUNDARY' : 'HEATMAP INTENSITY'}
-                      </span>
-                      <span className="adjuster-value">{Math.round(sliderValue * 100)}%</span>
-                    </div>
-                    <input 
-                      type="range" 
-                      className="styled-slider" 
-                      min="0" max="1" step="0.01" 
-                      value={sliderValue} 
-                      onChange={(e) => setSliderValue(parseFloat(e.target.value))}
-                      style={{ marginTop: '0.5rem' }}
-                    />
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* OVERLAYS (Pulse Scan & PDF) */}
-      <AnimatePresence>
-        {isAnalyzing && (
-          <motion.div 
-            className="scan-overlay fullscreen-override"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <div className="pulse-grid"></div>
-            <div className="scan-line"></div>
-            <div className="scan-status-container">
-              <Activity size={32} className="spin accent-cyan" />
-              <h2>{scanStatus}</h2>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {pdfPreviewUrl && (
-          <motion.div 
-            className="preview-overlay"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <motion.div 
-              className="preview-modal"
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            >
-              <div className="preview-header">
-                <div className="preview-title">
-                  <FileText size={18} className="accent-cyan-text" />
-                  CLINICAL REPORT PREVIEW
-                </div>
-                <div className="preview-actions">
-                  <button className="action-btn close" onClick={closePreview}>
-                    CANCEL
-                  </button>
-                  <button className="action-btn download" onClick={downloadPDF}>
-                    <Download size={14} /> DOWNLOAD DOCUMENT
-                  </button>
-                </div>
-              </div>
-              <iframe src={pdfPreviewUrl} className="preview-iframe" title="PDF Preview" />
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
+      {/* 4. ACTIONS & MODES (Right & Center) */}
       <AnimatePresence>
         {result && (
           <>
-            {/* NEXUS ORACLE CHAT TRIGGER */}
-            <motion.button
-              className="oracle-trigger"
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              whileHover={{ scale: 1.1 }}
-              onClick={() => setIsChatOpen(true)}
-            >
-              <MessageSquare size={24} />
-              {isNarrativeLoading && <div className="loading-dot" />}
-            </motion.button>
+            <div className="hud-module top-right">
+              <div className="action-stack">
+                <button className="hud-action-btn" onClick={generateReport} disabled={isExporting}><FileText size={16}/> REPORT</button>
+                <button className={`hud-action-btn ${isMicActive ? 'pulse' : ''}`} onClick={startVoiceCommands}><Mic size={16}/></button>
+              </div>
+            </div>
 
-            {/* NEXUS ORACLE MODAL */}
-            {isChatOpen && (
-              <motion.div 
-                className="oracle-container"
-                initial={{ opacity: 0, y: 20, scale: 0.9 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 20, scale: 0.9 }}
-              >
-                <div className="oracle-header">
-                  <div className="flex items-center gap-2">
-                    <Zap size={16} className="accent-cyan" />
-                    <span>NEXUS ORACLE</span>
-                  </div>
-                  <button onClick={() => setIsChatOpen(false)}>×</button>
+            <div className="hud-module bottom-center cinematic-hud">
+              <div className="hud-pill-menu">
+                {['raw', 'enhanced', 'split', 'gradcam', 'scorecam'].map(m => (
+                  <button key={m} className={activeMode === m ? 'active' : ''} onClick={() => handleModeChange(m)}>{m.toUpperCase()}</button>
+                ))}
+              </div>
+              { (activeMode === 'gradcam' || activeMode === 'split') && (
+                <div className="hud-adjuster">
+                  <input type="range" className="styled-slider" min="0" max="1" step="0.01" value={sliderValue} onChange={(e) => setSliderValue(parseFloat(e.target.value))} />
                 </div>
+              )}
+            </div>
+
+            {/* UPSTREAM RECONCILIATION: SIDECAR + ORACLE */}
+            <div className="hud-module bottom-right">
+               <RiskExplainerSidecar />
+            </div>
+
+            <button className="oracle-trigger" onClick={() => setIsChatOpen(true)}>
+              <MessageSquare size={24} />
+            </button>
+
+            {isChatOpen && (
+              <motion.div className="oracle-container" initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
+                <div className="oracle-header"><span>ORACLE ENGINE</span><button onClick={() => setIsChatOpen(false)}>×</button></div>
                 <div className="oracle-body">
                   <div className="narrative-box">
-                    <h3>Clinical Narrative (BioMistral v1.0)</h3>
-                    {isNarrativeLoading ? (
-                      <div className="shimmer-text">Generating radiologist impression...</div>
-                    ) : (
-                      <div className="narrative-content">
-                        {narrative || "No narrative generated."}
-                      </div>
-                    )}
+                    <h3>Clinical Impression (BioMistral-7B)</h3>
+                    <div className="narrative-content">{result.clinical_narrative}</div>
                   </div>
-                  <div className="chat-messages">
-                    {messages.map((msg, i) => (
-                      <div key={i} className={`message ${msg.role}`}>
-                        {msg.content}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <div className="oracle-footer">
-                   <p className="clinical-caveat">Powered by BioMistral-7B. Research Purposes Only.</p>
+                  {messages.map((m, i) => <div key={i} className={`message ${m.role}`}>{m.content}</div>)}
                 </div>
               </motion.div>
             )}
@@ -736,6 +357,17 @@ function App() {
         )}
       </AnimatePresence>
 
+      {/* 5. PDF PREVIEW */}
+      <AnimatePresence>
+        {pdfPreviewUrl && (
+          <div className="preview-overlay">
+            <div className="preview-modal">
+              <div className="preview-header"><span>REPORT PREVIEW</span><button onClick={() => setPdfPreviewUrl(null)}>CLOSE</button></div>
+              <iframe src={pdfPreviewUrl} className="preview-iframe" title="PDF" />
+            </div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
