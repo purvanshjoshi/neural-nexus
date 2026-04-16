@@ -5,9 +5,52 @@ from PIL import Image
 from torchvision import transforms
 import io
 import base64
-from pytorch_grad_cam import GradCAM, HiResCAM, GradCAMPlusPlus, LayerCAM
-from pytorch_grad_cam.utils.model_targets import ClassifierOutputTarget
-from pytorch_grad_cam.utils.image import show_cam_on_image
+import io
+import base64
+
+# ==========================================
+# 1. CORE UTILITIES
+# ==========================================
+
+class GradCAM:
+    def __init__(self, model, target_layer):
+        self.model = model
+        self.target_layer = target_layer
+        self.gradients, self.activations = None, None
+        
+        # Hooks for capturing activations and gradients
+        self.target_layer.register_forward_hook(self._save_activations)
+        self.target_layer.register_full_backward_hook(self._save_gradients)
+
+    def _save_activations(self, module, input, output):
+        self.activations = output
+
+    def _save_gradients(self, module, grad_input, grad_output):
+        self.gradients = grad_output[0]
+
+    def generate(self, input_tensor, class_idx=None):
+        self.model.eval()
+        output = self.model(input_tensor)
+        
+        if class_idx is None:
+            class_idx = output.argmax(dim=1).item()
+        
+        self.model.zero_grad()
+        output[0, class_idx].backward()
+        
+        # Weight gradients by spatial average
+        pooled_gradients = torch.mean(self.gradients, dim=[0, 2, 3])
+        activations = self.activations.detach().clone()
+        
+        for i in range(activations.shape[1]):
+            activations[:, i, :, :] *= pooled_gradients[i]
+            
+        heatmap = torch.mean(activations, dim=1).squeeze()
+        heatmap = np.maximum(heatmap.detach().cpu().numpy(), 0)
+        heatmap /= (np.max(heatmap) + 1e-8)
+        
+        probs = torch.softmax(output, dim=1)
+        return heatmap, class_idx, probs[0].tolist()
 
 # ==========================================
 # 2. IMAGE PROCESSING
@@ -99,38 +142,3 @@ def extract_risk_metrics(heatmap, confidence, label):
         "risk_score": final_risk
     }
 
-def generate_multi_xai(model, input_tensor, target_layer, class_idx=None):
-    """
-    Generates multiple XAI heatmaps and a consensus map.
-    Returns: {method_name: base64_heatmap_image}
-    """
-    model.eval()
-    
-    if class_idx is None:
-        with torch.no_grad():
-            output = model(input_tensor)
-            class_idx = output.argmax(dim=1).item()
-            
-    targets = [ClassifierOutputTarget(class_idx)]
-    
-    # 1. Grad-CAM
-    with GradCAM(model=model, target_layers=target_layer) as cam:
-        gc_map = cam(input_tensor=input_tensor, targets=targets)[0]
-        
-    # 2. Grad-CAM++
-    with GradCAMPlusPlus(model=model, target_layers=target_layer) as cam:
-        gc_plus_map = cam(input_tensor=input_tensor, targets=targets)[0]
-        
-    # 3. LayerCAM
-    with LayerCAM(model=model, target_layers=target_layer) as cam:
-        lcam_map = cam(input_tensor=input_tensor, targets=targets)[0]
-        
-    # 4. Consensus (Average of all maps)
-    consensus_map = (gc_map + gc_plus_map + lcam_map) / 3.0
-    
-    return {
-        "gradcam": gc_map,
-        "gradcam_plus": gc_plus_map,
-        "layercam": lcam_map,
-        "consensus": consensus_map
-    }
