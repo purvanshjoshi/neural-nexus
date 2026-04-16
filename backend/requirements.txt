@@ -10,3 +10,4 @@ pydantic
 fpdf2
 huggingface-hub
 python-dotenv
+grad-cam

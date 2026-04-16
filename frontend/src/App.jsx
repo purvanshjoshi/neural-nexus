@@ -193,7 +193,7 @@ function App() {
     setActiveMode(mode);
     if (mode === 'split') {
       setSliderValue(0.5); // Center the wipe separator
-    } else if (mode === 'gradcam') {
+    } else if (['gradcam', 'gradcam_plus', 'layercam', 'consensus'].includes(mode)) {
       setSliderValue(1.0); // Full opacity
     }
   };
@@ -269,7 +269,7 @@ function App() {
             {activeMode === 'split' ? (
                <>
                   <img 
-                    src={`data:image/png;base64,${result.images.heatmap}`} 
+                    src={`data:image/png;base64,${result.images.consensus}`} 
                     className="mri-layer heatmap-layer" 
                     alt="Heatmap Split Layer"
                     draggable="false"
@@ -285,11 +285,11 @@ function App() {
                </>
             ) : (
                <img 
-                 src={`data:image/png;base64,${result.images.heatmap}`} 
+                 src={`data:image/png;base64,${result.images[activeMode] || result.images.heatmap}`} 
                  className="mri-layer heatmap-layer" 
                  alt="Heatmap Opacity Layer"
                  draggable="false"
-                 style={{ opacity: activeMode === 'gradcam' ? sliderValue : 0 }}
+                 style={{ opacity: ['gradcam', 'gradcam_plus', 'layercam', 'consensus'].includes(activeMode) ? sliderValue : 0 }}
                />
             )}
             
@@ -466,6 +466,24 @@ function App() {
               >
                 GRAD-CAM
               </button>
+              <button 
+                className={activeMode === 'gradcam_plus' ? 'active' : ''} 
+                onClick={() => handleModeChange('gradcam_plus')}
+              >
+                GC++
+              </button>
+              <button 
+                className={activeMode === 'layercam' ? 'active' : ''} 
+                onClick={() => handleModeChange('layercam')}
+              >
+                LAYER-CAM
+              </button>
+              <button 
+                className={activeMode === 'consensus' ? 'active' : ''} 
+                onClick={() => handleModeChange('consensus')}
+              >
+                CONSENSUS
+              </button>
               <div className="hud-separator" />
               <button 
                 className={`deconstruct-toggle ${isDeconstructed ? 'active accent-red' : ''}`}
@@ -477,7 +495,7 @@ function App() {
             </div>
 
             <AnimatePresence>
-              {(activeMode === 'gradcam' || activeMode === 'split') && (
+              {(['gradcam', 'gradcam_plus', 'layercam', 'consensus', 'split'].includes(activeMode)) && (
                 <motion.div 
                   className="hud-adjuster"
                   initial={{ opacity: 0, height: 0 }}
