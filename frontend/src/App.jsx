@@ -31,6 +31,7 @@ function App() {
   const [sliderValue, setSliderValue] = useState(1.0); // Acts as opacity OR wipe percentage
   const [zoomLevel, setZoomLevel] = useState(1.0);     // Advanced Interaction: Zoom target
   const constraintsRef = useRef(null);                 // Advanced Interaction: Drag bounds
+  const [isSpatialExpanded, setIsSpatialExpanded] = useState(false);
   const [selectedHotspot, setSelectedHotspot] = useState(null);
 
 
@@ -89,9 +90,6 @@ function App() {
         setZoomLevel(1.0);
         setIsAnalyzing(false);
         
-        if (data.clinical_narrative) {
-          setIsInsightOpen(true); // Auto-open risk panel to show the impression
-        }
       }, 2400); 
     } catch (error) {
       console.error(error);
