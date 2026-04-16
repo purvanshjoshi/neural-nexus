@@ -33,46 +33,7 @@ function App() {
   const constraintsRef = useRef(null);                 // Advanced Interaction: Drag bounds
   const [isSpatialExpanded, setIsSpatialExpanded] = useState(false);
   const [selectedHotspot, setSelectedHotspot] = useState(null);
-  const [isInsightOpen, setIsInsightOpen] = useState(false);
 
-  const RiskExplainerPanel = () => {
-    if (!result || !result.clinical_narrative || !result.risk_metrics) return null;
-    
-    return (
-      <motion.div 
-        className={`nexus-oracle-sidecar ${isInsightOpen ? 'expanded' : 'collapsed'}`}
-        layout
-      >
-        <div className="oracle-header" onClick={() => setIsInsightOpen(!isInsightOpen)}>
-          <Brain size={18} className="accent-cyan" />
-          <span>AI INSIGHT & RISK</span>
-          {!isInsightOpen && <div className="unread-dot" />}
-        </div>
-        
-        <AnimatePresence>
-          {isInsightOpen && (
-            <motion.div 
-              className="oracle-body risk-panel-body"
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 400, opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              style={{ overflowY: 'auto', padding: '1rem', whiteSpace: 'pre-wrap', lineHeight: '1.5', fontSize: '0.85rem' }}
-            >
-              <div style={{ marginBottom: '1rem', padding: '1rem', background: 'rgba(0,0,0,0.5)', borderRadius: '8px', borderLeft: '4px solid var(--accent-cyan)' }}>
-                 <h3 style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.7rem', letterSpacing: '1px' }}>CLINICAL RISK SCORE</h3>
-                 <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: 'var(--accent-cyan)' }}>
-                    {result.risk_metrics.risk_score}<span style={{ fontSize: '1rem', color: 'var(--text-secondary)' }}>/100</span>
-                 </div>
-              </div>
-              <div style={{ color: 'var(--text-primary)' }}>
-                {result.clinical_narrative}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.div>
-    );
-  };
 
   const TargetHUD = ({ location }) => {
     if (!location) return null;
@@ -129,9 +90,6 @@ function App() {
         setZoomLevel(1.0);
         setIsAnalyzing(false);
         
-        if (data.clinical_narrative) {
-          setIsInsightOpen(true); // Auto-open risk panel to show the impression
-        }
       }, 2400); 
     } catch (error) {
       console.error(error);
@@ -363,6 +321,21 @@ function App() {
                 <span className="metric-label">ZOOM STATE</span>
                 <span className="metric-value">{zoomLevel.toFixed(1)}x</span>
               </div>
+
+              {/* INTEGRATED BIOMISTRAL CLINICAL INSIGHTS */}
+              {result.clinical_narrative && (
+                <div className="clinical-insight-hud">
+                  <div className="risk-summary-row">
+                    <div>
+                      <div className="risk-label">CLINICAL RISK SCORE</div>
+                      <div className="risk-value">{result.risk_metrics.risk_score}/100</div>
+                    </div>
+                  </div>
+                  <div className="clinical-narrative-box">
+                    {result.clinical_narrative}
+                  </div>
+                </div>
+              )}
             </motion.div>
           )}
         </AnimatePresence>
@@ -498,14 +471,6 @@ function App() {
         )}
       </AnimatePresence>
 
-      {/* FLOATING BOTTOM RIGHT - NEXUS ORACLE */}
-      <AnimatePresence>
-        {result && (
-          <div className="hud-module bottom-right">
-            <RiskExplainerPanel />
-          </div>
-        )}
-      </AnimatePresence>
 
       {/* OVERLAYS (Pulse Scan & PDF) */}
       <AnimatePresence>
