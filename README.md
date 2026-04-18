@@ -160,6 +160,11 @@ The final synthesis combines classification confidence, spatial coordinates, and
 
 ## ⚙️ Setup & Installation
 
+### 📊 Dataset Preparation
+To maintain a lean repository, the raw dataset is not included. 
+1. Download the **Brain Tumor Healthcare Dataset** from [Kaggle](https://www.kaggle.com/datasets/purvanshjoshi1/healthcare).
+2. Place the `Healthcare_1.zip` file or its extracted contents into the `/dataset` directory.
+   
 ### Backend (Python/FastAPI)
 ```bash
 cd backend

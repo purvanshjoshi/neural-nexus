@@ -1,5 +1,6 @@
 # Data
 raw_images/
+dataset/
 
 # Secrets
 .env
