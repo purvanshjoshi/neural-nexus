@@ -9,21 +9,20 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/License-MIT-blue?style=plastic" alt="License" />
-  <img src="https://img.shields.io/badge/Python-3.9+-3776AB?style=plastic&logo=python&logoColor=white" alt="Python" />
-  <img src="https://img.shields.io/badge/FastAPI-v1.0-009688?style=plastic&logo=fastapi&logoColor=white" alt="FastAPI" />
-  <img src="https://img.shields.io/badge/PyTorch-AI%20Core-EE4C2C?style=plastic&logo=pytorch&logoColor=white" alt="PyTorch" />
-  <img src="https://img.shields.io/badge/React%203D-HUD-61DAFB?style=plastic&logo=react&logoColor=black" alt="React" />
-  <img src="https://img.shields.io/badge/Vercel-Deployment-000000?style=plastic&logo=vercel&logoColor=white" alt="Vercel" />
-  <img src="https://img.shields.io/badge/Hugging%20Face-AI%20Backend-FFD21E?style=plastic&logo=huggingface&logoColor=black" alt="Hugging Face" />
+  <img src="https://img.shields.io/badge/License-MIT-00C8FF?style=for-the-badge" alt="License" />
+  <img src="https://img.shields.io/badge/Python-3.9+-00C8FF?style=for-the-badge&logo=python&logoColor=white" alt="Python" />
+  <img src="https://img.shields.io/badge/FastAPI-v1.0-00C8FF?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI" />
+  <img src="https://img.shields.io/badge/PyTorch-AI%20Core-00C8FF?style=for-the-badge&logo=pytorch&logoColor=white" alt="PyTorch" />
+  <img src="https://img.shields.io/badge/React%203D-HUD-00C8FF?style=for-the-badge&logo=react&logoColor=white" alt="React" />
 </p>
 
 <p align="center">
   <a href="https://neural-nexus-green.vercel.app/">
-    <img src="https://img.shields.io/badge/Clinical%20HUD-Live%20Demo-000000?style=plastic&logo=vercel&logoColor=white" alt="Frontend Demo" />
+    <img src="https://img.shields.io/badge/Clinical_HUD-Live_Demo-000000?style=for-the-badge&logo=vercel&logoColor=white" alt="Frontend Demo" />
   </a>
+  &nbsp;
   <a href="https://huggingface.co/spaces/purvansh01/neural-nexus-backend">
-    <img src="https://img.shields.io/badge/AI%20Core-Hugging%20Face-FFD21E?style=plastic&logo=huggingface&logoColor=black" alt="Backend AI Core" />
+    <img src="https://img.shields.io/badge/AI_Core-Hugging_Face-FFD21E?style=for-the-badge&logo=huggingface&logoColor=black" alt="Backend AI Core" />
   </a>
 </p>
 

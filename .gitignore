@@ -1,8 +1,5 @@
 # Data
-Healthcare_1.zip
-Dataset/
-backend/weights/*.pth
-backup_untracked/
+raw_images/
 
 # Secrets
 .env
@@ -13,7 +10,6 @@ frontend/.env
 # Bulky Binaries & Docs
 *.pdf
 *.docx
-*.zip
 docs/*.pdf
 docs/*.docx
 backend/*.pdf
