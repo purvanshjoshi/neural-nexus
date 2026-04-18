@@ -9,20 +9,20 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/License-MIT-00C8FF?style=for-the-badge" alt="License" />
-  <img src="https://img.shields.io/badge/Python-3.9+-00C8FF?style=for-the-badge&logo=python&logoColor=white" alt="Python" />
-  <img src="https://img.shields.io/badge/FastAPI-v1.0-00C8FF?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI" />
-  <img src="https://img.shields.io/badge/PyTorch-AI%20Core-00C8FF?style=for-the-badge&logo=pytorch&logoColor=white" alt="PyTorch" />
-  <img src="https://img.shields.io/badge/React%203D-HUD-00C8FF?style=for-the-badge&logo=react&logoColor=white" alt="React" />
+  <img src="https://img.shields.io/badge/License-MIT-00D4FF?style=for-the-badge&logo=github&logoColor=white" alt="License" />
+  <img src="https://img.shields.io/badge/Python-3.9+-00D4FF?style=for-the-badge&logo=python&logoColor=white" alt="Python" />
+  <img src="https://img.shields.io/badge/FastAPI-v1.0-00D4FF?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI" />
+  <img src="https://img.shields.io/badge/PyTorch-AI%20Core-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white" alt="PyTorch" />
+  <img src="https://img.shields.io/badge/React%203D-HUD-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="React" />
 </p>
 
 <p align="center">
   <a href="https://neural-nexus-green.vercel.app/">
-    <img src="https://img.shields.io/badge/Clinical_HUD-Live_Demo-000000?style=for-the-badge&logo=vercel&logoColor=white" alt="Frontend Demo" />
+    <img src="https://img.shields.io/badge/🚀_Launch_Clinical_HUD-Live_Demo-000000?style=for-the-badge" alt="Frontend Demo" />
   </a>
   &nbsp;
   <a href="https://huggingface.co/spaces/purvansh01/neural-nexus-backend">
-    <img src="https://img.shields.io/badge/AI_Core-Hugging_Face-FFD21E?style=for-the-badge&logo=huggingface&logoColor=black" alt="Backend AI Core" />
+    <img src="https://img.shields.io/badge/🧠_AI_Diagnostic_Core-Hugging_Face-FFD21E?style=for-the-badge&logo=huggingface&logoColor=black" alt="Backend AI Core" />
   </a>
 </p>
 
