@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  <a href="https://neural-nexus-git-feature-un-e2e0e7-purvansh-s-projects-3c13a221.vercel.app/">
+  <a href="https://neural-nexus-green.vercel.app/">
     <img src="https://img.shields.io/badge/Clinical%20HUD-Live%20Demo-000000?style=plastic&logo=vercel&logoColor=white" alt="Frontend Demo" />
   </a>
   <a href="https://huggingface.co/spaces/purvansh01/neural-nexus-backend">
