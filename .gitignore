@@ -2,6 +2,21 @@
 Healthcare_1.zip
 Dataset/
 backend/weights/*.pth
+backup_untracked/
+
+# Secrets
+.env
+*.env
+backend/.env
+frontend/.env
+
+# Bulky Binaries & Docs
+*.pdf
+*.docx
+*.zip
+docs/*.pdf
+docs/*.docx
+backend/*.pdf
 
 # Python
 __pycache__/
@@ -37,5 +52,4 @@ dist-ssr/
 
 # Misc
 .DS_Store
-
 hf_deploy/
