@@ -1,4 +1,6 @@
-![Neural Nexus Banner](assets/banner.png)
+<p align="center">
+  <img src="assets/banner.png" alt="Neural Nexus Banner" height="200" />
+</p>
 
 # Neural-NEXUS: Clinical-Grade Brain Tumor Diagnostics via Interpretable Deep Learning 
 
