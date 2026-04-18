@@ -2,21 +2,41 @@
   <img src="assets/banner.png" alt="Neural Nexus Banner" height="200" />
 </p>
 
-# Neural-NEXUS: Clinical-Grade Brain Tumor Diagnostics via Interpretable Deep Learning 
+<h1 align="center">Neural-NEXUS</h1>
 
-**Neural-NEXUS** is a state-of-the-art AI diagnostic platform designed to assist clinicians in the detection, classification, and reporting of brain tumors from MRI scans. It bridges the gap between raw medical imaging and actionable clinical insights using high-performance deep learning and a cinematic "Mission Control" interface.
+<p align="center">
+  <strong>Clinical-Grade Brain Tumor Diagnostics via Interpretable Deep Learning</strong>
+</p>
 
-[Live Demo (Frontend)](https://neural-nexus-git-feature-un-e2e0e7-purvansh-s-projects-3c13a221.vercel.app/) | [AI Core (Backend)](https://huggingface.co/spaces/purvansh01/neural-nexus-backend)
+<p align="center">
+  <img src="https://img.shields.io/badge/License-MIT-00C8FF?style=for-the-badge" alt="License" />
+  <img src="https://img.shields.io/badge/Python-3.9+-00C8FF?style=for-the-badge&logo=python&logoColor=white" alt="Python" />
+  <img src="https://img.shields.io/badge/FastAPI-v1.0-00C8FF?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI" />
+  <img src="https://img.shields.io/badge/PyTorch-AI%20Core-00C8FF?style=for-the-badge&logo=pytorch&logoColor=white" alt="PyTorch" />
+  <img src="https://img.shields.io/badge/React%203D-HUD-00C8FF?style=for-the-badge&logo=react&logoColor=white" alt="React" />
+</p>
+
+<p align="center">
+  <a href="https://neural-nexus-git-feature-un-e2e0e7-purvansh-s-projects-3c13a221.vercel.app/"><strong>Explore the Clinical HUD (Frontend) »</strong></a>
+  <br />
+  <a href="https://huggingface.co/spaces/purvansh01/neural-nexus-backend"><strong>Access the AI Core (Backend) »</strong></a>
+</p>
 
 ---
 
-## 🚀 Key Pillars
+## 🔬 Project Mission & Core
 
-- **🧠 AI-Driven Analysis**: Robust classification across 4 classes (Glioma, Meningioma, Pituitary, Healthy) using an optimized ResNet-50 architecture.
-- **🔍 Spatial Interpretability**: Gradient-weighted Class Activation Mapping (Grad-CAM) providing visual evidence for every diagnostic decision.
-- **🕹️ 3D Spatial Copilot**: An interactive 3D brain viewer (React Three Fiber) that maps 2D findings into an anatomical coordinate system.
-- **📝 Clinical Narrative Engine**: Integration with **BioMistral LLM** to transform raw telemetry into human-readable clinical narratives.
-- **📄 Automated Reporting**: One-click generation of clinician-ready PDF reports with embedded diagnostic heatmaps and risk assessments.
+**Neural-NEXUS** is engineered to navigate the fundamental challenges of modern medical AI: dataset class disparity, inter-patient variability, and the critical requirement for **clinical interpretability**. It transforms raw MRI imaging into a cinematic diagnostic experience, bridging the gap between "Black-Box" models and actionable neurological insights.
+
+### 🚀 Core System Capabilities
+
+| Pillar | Description | Tech Stack |
+| :--- | :--- | :--- |
+| **AI-Driven Analysis** | Robust classification across Glioma, Meningioma, Pituitary, and Healthy controls. | ResNet-50 + Inverse-Frequency Weighting |
+| **Spatial Interpretability** | Grad-CAM heatmaps providing visual proof for every diagnostic decision. | Gradient-weighted Class Activation Mapping |
+| **3D Spatial Copilot** | An interactive 3D brain viewer mapping 2D findings to anatomical coordinates. | React Three Fiber + Three.js |
+| **Narrative Synthesis** | Automated conversion of raw diagnostic telemetry into clinical narratives. | BioMistral LLM Integration |
+| **Automated Reporting** | One-click localized PDF reports with embedded heatmaps and risk assessments. | fpdf2 Engine |
 
 ---
 
