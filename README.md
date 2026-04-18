@@ -1,4 +1,4 @@
-# Neural-NEXUS: Clinical-Grade Brain Tumor Diagnostics via Interpretable Deep Learning
+# Neural-NEXUS: Clinical-Grade Brain Tumor Diagnostics via Interpretable Deep Learning 
 
 Neural-NEXUS is a specialized deep learning framework engineered for the robust analysis and classification of brain tumors from MRI imaging. This repository characterizes a system designed to navigate fundamental challenges in medical AI: dataset class disparity, inter-patient variability, and the critical requirement for clinical interpretability.
 
