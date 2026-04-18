@@ -19,9 +19,12 @@
 </p>
 
 <p align="center">
-  <a href="https://neural-nexus-git-feature-un-e2e0e7-purvansh-s-projects-3c13a221.vercel.app/"><strong>Explore the Clinical HUD (Frontend) »</strong></a>
-  <br />
-  <a href="https://huggingface.co/spaces/purvansh01/neural-nexus-backend"><strong>Access the AI Core (Backend) »</strong></a>
+  <a href="https://neural-nexus-git-feature-un-e2e0e7-purvansh-s-projects-3c13a221.vercel.app/">
+    <img src="https://img.shields.io/badge/Clinical%20HUD-Live%20Demo-000000?style=plastic&logo=vercel&logoColor=white" alt="Frontend Demo" />
+  </a>
+  <a href="https://huggingface.co/spaces/purvansh01/neural-nexus-backend">
+    <img src="https://img.shields.io/badge/AI%20Core-Hugging%20Face-FFD21E?style=plastic&logo=huggingface&logoColor=black" alt="Backend AI Core" />
+  </a>
 </p>
 
 ---
