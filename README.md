@@ -101,15 +101,34 @@ This identifies the specific structural features (density shifts, contrast anoma
 
 ## 🖼️ Clinical Gallery
 
+### Tier 1: Performance & Statistical Validation
+The system demonstrated a **91.88% confusion matrix accuracy**, confirming its theoretical stability across all four pathological categories.
+<img width="100%" alt="Confusion Matrix" src="https://github.com/user-attachments/assets/3f6a8497-37ef-4abd-9422-00cd68ef4604" />
+
+---
+
+### Tier 2: Interpretability & Localization Evidence
+Neural-NEXUS provides visual proof for every diagnostic decision. Grade-weighted Class Activation Mapping (Grad-CAM) identifies the specific density variations and contrast anomalies that drive the classification.
+
 <table border="0">
   <tr>
-    <td><img width="100%" alt="Confusion Matrix" src="https://github.com/user-attachments/assets/3f6a8497-37ef-4abd-9422-00cd68ef4604" /><br><em>Confusion Matrix</em></td>
-    <td><img width="100%" alt="Tumor Localization" src="https://github.com/user-attachments/assets/6d22032e-b411-4c6c-a83d-e0a391909178" /><br><em>Tumor Localization</em></td>
-  </tr>
-  <tr>
-    <td colspan="2"><img width="100%" alt="Full Report" src="https://github.com/user-attachments/assets/d8a946fb-fb62-4c15-8086-2b481171e6fa" /><br><em>Full Clinical HUD & Report</em></td>
+    <td width="50%"><img width="100%" alt="Tumor Localization" src="https://github.com/user-attachments/assets/6d22032e-b411-4c6c-a83d-e0a391909178" /><br><em><strong>Pathological Localization</strong>: Heatmaps correspond to detected tumor masses.</em></td>
+    <td width="50%"><img width="100%" alt="Healthy Control" src="https://github.com/user-attachments/assets/f49be335-3013-437c-a29b-6b7121c7c2f4" /><br><em><strong>Healthy Control</strong>: The model evaluates structural symmetry in negative cases.</em></td>
   </tr>
 </table>
+
+---
+
+### Tier 3: Unified Clinical HUD & Intelligence
+The frontend provides a high-density "Mission Control" aesthetic, integrating raw MRI telemetry with 3D spatial mapping and BioMistral clinical narratives.
+
+| Interactive Split-View (RAW vs Heatmap) | High-Density Diagnostic Dashboard |
+| :--- | :--- |
+| <img width="100%" alt="Split View" src="https://github.com/user-attachments/assets/b882cbe1-7e8a-4683-9b17-6418027beda7" /> | <img width="100%" alt="Full Report" src="https://github.com/user-attachments/assets/d8a946fb-fb62-4c15-8086-2b481171e6fa" /> |
+
+#### 📊 Diagnostic Summary & Telemetry
+The final synthesis combines classification confidence, spatial coordinates, and clinical risk assessments into a unified clinician-ready view.
+<img width="100%" alt="Summary" src="https://github.com/user-attachments/assets/6205b700-5f1b-4b85-9e4c-60a5cd0d6702" />
 
 ---
 
