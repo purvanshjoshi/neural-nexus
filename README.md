@@ -28,7 +28,7 @@
 
 ---
 
-## 🔬 Project Mission & Core
+## 🔬 Project Mission & Core 
 
 **Neural-NEXUS** is engineered to navigate the fundamental challenges of modern medical AI: dataset class disparity, inter-patient variability, and the critical requirement for **clinical interpretability**. It transforms raw MRI imaging into a cinematic diagnostic experience, bridging the gap between "Black-Box" models and actionable neurological insights.
 
