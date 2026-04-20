@@ -18,11 +18,11 @@
 
 <p align="center">
   <a href="https://neural-nexus-green.vercel.app/">
-    <img src="https://img.shields.io/badge/📡_INITIATE_SYSTEM_UPLINK-Live_Demo-FF00FF?style=for-the-badge" alt="Frontend Demo" />
+    <img src="https://badgen.net/badge/🔬_LAUNCH_DIAGNOSTIC_HUD/Live_Demo/cyan?icon=github" alt="Frontend Demo" />
   </a>
   &nbsp;
   <a href="https://huggingface.co/spaces/purvansh01/neural-nexus-backend">
-    <img src="https://img.shields.io/badge/🧩_VIEW_NEURAL_LOGIC-Hugging_Face-FF00FF?style=for-the-badge&logo=huggingface&logoColor=black" alt="Backend AI Core" />
+    <img src="https://badgen.net/badge/🧠_SYNC_NEURAL_KERNEL/Hugging_Face/black?icon=huggingface" alt="Backend AI Core" />
   </a>
 </p>
 
