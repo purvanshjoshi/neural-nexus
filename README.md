@@ -5,24 +5,24 @@
 <h1 align="center">Neural-NEXUS</h1>
 
 <p align="center">
-  <strong>Clinical-Grade Brain Tumor Diagnostics via Interpretable Deep Learning</strong>
+  <strong>Neural-Link: Advanced Binary Diagnostics for Human Pathology</strong>
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/License-MIT-00D4FF?style=for-the-badge&logo=github&logoColor=white" alt="License" />
-  <img src="https://img.shields.io/badge/Python-3.9+-00D4FF?style=for-the-badge&logo=python&logoColor=white" alt="Python" />
-  <img src="https://img.shields.io/badge/FastAPI-v1.0-00D4FF?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI" />
-  <img src="https://img.shields.io/badge/PyTorch-AI%20Core-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white" alt="PyTorch" />
-  <img src="https://img.shields.io/badge/React%203D-HUD-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="React" />
+  <img src="https://img.shields.io/badge/LICENSE-MIT-FF00FF?style=social&logo=github" alt="License" />
+  <img src="https://img.shields.io/badge/CYBER_DECK-PYTHON-FF00FF?style=social&logo=python" alt="Python" />
+  <img src="https://img.shields.io/badge/UPLINK-FASTAPI-FF00FF?style=social&logo=fastapi" alt="FastAPI" />
+  <img src="https://img.shields.io/badge/AI_RIG-PYTORCH-FF00FF?style=social&logo=pytorch" alt="PyTorch" />
+  <img src="https://img.shields.io/badge/HUD_LINK-REACT-FF00FF?style=social&logo=react" alt="React" />
 </p>
 
 <p align="center">
   <a href="https://neural-nexus-green.vercel.app/">
-    <img src="https://img.shields.io/badge/🚀_Launch_Clinical_HUD-Live_Demo-000000?style=for-the-badge" alt="Frontend Demo" />
+    <img src="https://img.shields.io/badge/📡_INITIATE_SYSTEM_UPLINK-Live_Demo-FF00FF?style=for-the-badge" alt="Frontend Demo" />
   </a>
   &nbsp;
   <a href="https://huggingface.co/spaces/purvansh01/neural-nexus-backend">
-    <img src="https://img.shields.io/badge/🧠_AI_Diagnostic_Core-Hugging_Face-FFD21E?style=for-the-badge&logo=huggingface&logoColor=black" alt="Backend AI Core" />
+    <img src="https://img.shields.io/badge/🧩_VIEW_NEURAL_LOGIC-Hugging_Face-FF00FF?style=for-the-badge&logo=huggingface&logoColor=black" alt="Backend AI Core" />
   </a>
 </p>
 
