@@ -1,6 +1,6 @@
 fastapi==0.141.1
 uvicorn==0.52.4
-python-multipart==0.0.6
+python-multipart==0.0.32
 torch
 torchvision
 numpy
