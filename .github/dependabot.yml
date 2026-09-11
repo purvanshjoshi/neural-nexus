@@ -1,0 +1,100 @@
+# ==============================================================================
+# Dependabot Configuration - Neural Nexus
+# ==============================================================================
+version: 2
+updates:
+  # ----------------------------------------------------------------------------
+  # 1. Frontend Dependencies (npm)
+  # ----------------------------------------------------------------------------
+  - package-ecosystem: "npm"
+    directory: "/frontend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "04:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 10
+    target-branch: "main"
+    reviewers:
+      - "purvanshjoshi"
+      - "archittmittal"
+    commit-message:
+      prefix: "chore(deps-frontend)"
+      include: "scope"
+    groups:
+      frontend-dependencies:
+        patterns:
+          - "*"
+
+  # ----------------------------------------------------------------------------
+  # 2. Backend Dependencies (pip)
+  # ----------------------------------------------------------------------------
+  - package-ecosystem: "pip"
+    directory: "/backend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "04:30"
+      timezone: "UTC"
+    open-pull-requests-limit: 10
+    target-branch: "main"
+    reviewers:
+      - "purvanshjoshi"
+      - "archittmittal"
+    commit-message:
+      prefix: "chore(deps-backend)"
+      include: "scope"
+
+  # ----------------------------------------------------------------------------
+  # 3. Docker Container Base Images
+  # ----------------------------------------------------------------------------
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "05:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 5
+    target-branch: "main"
+    reviewers:
+      - "purvanshjoshi"
+      - "archittmittal"
+    commit-message:
+      prefix: "chore(deps-docker)"
+      include: "scope"
+
+  - package-ecosystem: "docker"
+    directory: "/backend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "05:15"
+      timezone: "UTC"
+    open-pull-requests-limit: 5
+    target-branch: "main"
+    reviewers:
+      - "purvanshjoshi"
+      - "archittmittal"
+    commit-message:
+      prefix: "chore(deps-docker-backend)"
+      include: "scope"
+
+  # ----------------------------------------------------------------------------
+  # 4. GitHub Actions Workflows
+  # ----------------------------------------------------------------------------
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "05:30"
+      timezone: "UTC"
+    open-pull-requests-limit: 5
+    target-branch: "main"
+    reviewers:
+      - "purvanshjoshi"
+      - "archittmittal"
+    commit-message:
+      prefix: "chore(deps-actions)"
+      include: "scope"
