@@ -1,0 +1,68 @@
+# ==============================================================================
+# CODEOWNERS - Neural Nexus Repository
+# ==============================================================================
+# Primary Code Owners:
+# - @purvanshjoshi
+# - @archittmittal
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 1. Global Repository Ownership (Default)
+# ------------------------------------------------------------------------------
+* @purvanshjoshi @archittmittal
+
+# ------------------------------------------------------------------------------
+# 2. Backend & ML Core Services
+# ------------------------------------------------------------------------------
+/backend/                       @purvanshjoshi @archittmittal
+/backend/main.py               @purvanshjoshi @archittmittal
+/backend/model.py              @purvanshjoshi @archittmittal
+/backend/llm_engine.py         @purvanshjoshi @archittmittal
+/backend/report.py             @purvanshjoshi @archittmittal
+/backend/utils.py              @purvanshjoshi @archittmittal
+/backend/Dockerfile            @purvanshjoshi @archittmittal
+/backend/requirements.txt      @purvanshjoshi @archittmittal
+/backend/weights/              @purvanshjoshi @archittmittal
+
+# ------------------------------------------------------------------------------
+# 3. Frontend Web Application (React, Vite, Three.js 3D Brain)
+# ------------------------------------------------------------------------------
+/frontend/                      @purvanshjoshi @archittmittal
+/frontend/src/                  @purvanshjoshi @archittmittal
+/frontend/src/App.jsx           @purvanshjoshi @archittmittal
+/frontend/src/BrainModel.jsx    @purvanshjoshi @archittmittal
+/frontend/public/               @purvanshjoshi @archittmittal
+/frontend/package.json          @purvanshjoshi @archittmittal
+/frontend/vite.config.js        @purvanshjoshi @archittmittal
+
+# ------------------------------------------------------------------------------
+# 4. Datasets, Model Artifacts & Training Notebooks
+# ------------------------------------------------------------------------------
+/dataset/                       @purvanshjoshi @archittmittal
+/notebooks/                     @purvanshjoshi @archittmittal
+/raw_images/                    @purvanshjoshi @archittmittal
+
+# ------------------------------------------------------------------------------
+# 5. Deployment, Containerization & HuggingFace Integration
+# ------------------------------------------------------------------------------
+/hf_deploy/                     @purvanshjoshi @archittmittal
+/Dockerfile.hf                  @purvanshjoshi @archittmittal
+/docker-compose.yml             @purvanshjoshi @archittmittal
+
+# ------------------------------------------------------------------------------
+# 6. Scripts & Utilities
+# ------------------------------------------------------------------------------
+/scripts/                       @purvanshjoshi @archittmittal
+
+# ------------------------------------------------------------------------------
+# 7. Documentation & Governance
+# ------------------------------------------------------------------------------
+/docs/                          @purvanshjoshi @archittmittal
+/assets/                        @purvanshjoshi @archittmittal
+/*.md                           @purvanshjoshi @archittmittal
+/LICENSE                        @purvanshjoshi @archittmittal
+
+# ------------------------------------------------------------------------------
+# 8. GitHub Workflows & DevOps Configuration
+# ------------------------------------------------------------------------------
+/.github/                       @purvanshjoshi @archittmittal
