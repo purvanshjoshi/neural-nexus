@@ -1,5 +1,5 @@
 # Specialized Dockerfile for Hugging Face Spaces
-FROM python:3.11-slim
+FROM python:3.14-slim
 
 # Set up a new user with UID 1000 (Hugging Face requirement)
 RUN useradd -m -u 1000 user
