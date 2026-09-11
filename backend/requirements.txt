@@ -1,4 +1,4 @@
-fastapi==0.109.0
+fastapi==0.141.1
 uvicorn==0.52.4
 python-multipart==0.0.6
 torch
